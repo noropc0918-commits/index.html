@@ -728,7 +728,7 @@ function updateNextBtn() {
 
 function goNext() {
   if (currentStep === 3) { submit(); return; }
-  if (currentStep === 4) { resetForm(); return; }
+  if (currentStep === 4) { resetForm();currentStep=1;showStep(); return; }
   currentStep++;
   showStep();
 }
