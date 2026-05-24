@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>【15日締め切り】希望申請フォーム</title>
+<title>【15日締め切り】休み希望申請フォーム</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -916,5 +916,22 @@ function resetForm() {
 updateProgress();
 updateNextBtn();
 </script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var today = new Date();
+        var date = today.getDate(); 
+        if (date >= 16) {
+            document.body.innerHTML = `
+                <div style="text-align: center; padding: 50px 20px; font-family: sans-serif;">
+                    <div style="font-size: 50px; margin-bottom: 20px;">⚠️</div>
+                    <h2 style="color: #d9534f; margin-bottom: 10px;">来月分の申請は締め切りました</h2>
+                    <p style="color: #666; font-size: 14px;">シフトの希望申請は毎月15日までです。<br>以降の変更などは、岩上に直接連絡してください。</p>
+                </div>
+            `;
+            document.body.style.backgroundColor = "#f8f9fa";
+        }
+    });
+</script>
+
 </body>
 </html>
