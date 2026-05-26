@@ -205,6 +205,13 @@ body {
   font-weight: 700;
 }
 .cal-d.selected.sun, .cal-d.selected.sat { color: var(--surface); }
+.cal-d.submitted {
+  background: #E8E8E8;
+  border-radius: 6px;
+  cursor: not-allowed;
+  color: #999;
+  font-size: 12px;
+}
 
 /* Selected chips */
 .chip-wrap {
@@ -453,11 +460,60 @@ body {
 }
 .btn-next:disabled { opacity: 0.3; cursor: not-allowed; }
 .btn-next:not(:disabled):active { opacity: 0.8; }
+.deadline-banner {
+  background: #FFF8E6;
+  border: 1px solid #F0D48A;
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.deadline-icon { font-size: 18px; flex-shrink: 0; }
+.deadline-text { font-size: 13px; color: #7A4F00; line-height: 1.6; font-weight: 500; }
+.closed-screen {
+  text-align: center;
+  padding: 48px 0 24px;
+}
+.closed-icon {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: #FFF0EE;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 20px;
+  font-size: 38px;
+}
+.closed-title { font-size: 20px; font-weight: 700; margin-bottom: 12px; color: var(--text); }
+.closed-msg {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.8;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-top: 8px;
+  text-align: left;
+}
 </style>
 </head>
 <body>
 <div class="app">
 
+  <!-- 締め切り後の画面（16日以降に表示） -->
+  <div id="closedScreen" style="display:none;padding:24px 20px">
+    <div class="closed-screen">
+      <div class="closed-icon">🔒</div>
+      <p class="closed-title">申請期間が終了しました</p>
+      <div class="closed-msg">
+        休み希望申請は<strong>15日まで</strong>です。<br><br>
+        変更や追加は<strong>岩上に直接</strong>お願い致します。
+      </div>
+    </div>
+  </div>
+
+  <div id="mainApp">
   <div class="header">
     <div class="header-title">希望申請フォーム</div>
     <div class="header-sub" id="headerSub">2026年 シフト</div>
@@ -484,6 +540,10 @@ body {
       <p class="step-label">step 2 / 4</p>
       <h1 class="step-title">希望日を<br>選んでください</h1>
       <p class="step-desc">複数日まとめて選べます。月をまたいでもOK。</p>
+      <div class="deadline-banner">
+        <span class="deadline-icon">⚠️</span>
+        <span class="deadline-text">申請できるのは<strong>1日〜15日</strong>までです。<br>16日以降の変更・追加は岩上に直接お願い致します。</span>
+      </div>
       <div class="cal-nav">
         <button class="cal-nav-btn" onclick="prevCalMonth()">‹</button>
         <span class="cal-month-label" id="calMonthLabel"></span>
@@ -587,13 +647,13 @@ body {
 
       <p class="type-section-label">シフト希望</p>
       <div class="shift-grid">
-        <div class="shift-card" data-shift="○" onclick="selShift(this,'○','早番','9:30〜17:00','7.5h')">
+        <div class="shift-card" data-shift="○" onclick="selShift(this,'○','早番','9:30〜17:30','7.5h')">
           <div class="shift-sym">○</div>
           <div class="shift-name">早番</div>
           <div class="shift-time">9:30 – 17:30</div>
           <div class="shift-h">7.5h</div>
         </div>
-        <div class="shift-card" data-shift="●" onclick="selShift(this,'●','遅番','11:30〜19:00','7.5h')">
+        <div class="shift-card" data-shift="●" onclick="selShift(this,'●','遅番','12:00〜19:00','7.5h')">
           <div class="shift-sym">●</div>
           <div class="shift-name">遅番</div>
           <div class="shift-time">12:00 – 19:00</div>
@@ -636,14 +696,14 @@ body {
       <textarea class="note-area" id="noteField" placeholder="例：午前中は通院のため、午後から出勤希望　など"></textarea>
     </div>
 
-    <!-- Step 4: 完了 -->
+    <!-- Step 4: 申請完了 → 次のアクション選択 -->
     <div class="step" id="step4">
       <div class="success-wrap">
         <div class="success-circle">✓</div>
         <p class="success-title">申請完了！</p>
-        <p class="success-sub">管理者が確認後、<br>シフトに反映されます。<br>お疲れさまでした。</p>
+        <p class="success-sub">管理者が確認後、<br>シフトに反映されます。</p>
       </div>
-      <div class="confirm-card" style="margin-top:28px">
+      <div class="confirm-card" style="margin-top:20px">
         <div class="confirm-row">
           <span class="c-label">名前</span>
           <span class="c-val" id="cfName2">—</span>
@@ -657,6 +717,43 @@ body {
           <span class="c-val" id="cfType2">—</span>
         </div>
       </div>
+      <p style="font-size:13px;font-weight:700;text-align:center;margin:24px 0 12px;color:var(--text-muted)">次はどうしますか？</p>
+      <button class="btn-next" style="margin-bottom:10px" onclick="continueInput()">続けて入力する</button>
+      <button class="btn-next" style="background:var(--surface);color:var(--text);border:1.5px solid var(--border-strong)" onclick="showReview()">申請を確認する</button>
+    </div>
+
+    <!-- Step 5: 申請確認カレンダー -->
+    <div class="step" id="step5">
+      <p class="step-label">申請確認</p>
+      <h1 class="step-title">申請内容の確認</h1>
+      <p class="step-desc">今回の申請をカレンダーで確認できます</p>
+      <div class="cal-nav">
+        <button class="cal-nav-btn" onclick="prevReviewMonth()">‹</button>
+        <span class="cal-month-label" id="reviewMonthLabel"></span>
+        <button class="cal-nav-btn" onclick="nextReviewMonth()">›</button>
+      </div>
+      <div class="cal-head">
+        <div class="cal-hd sun">日</div>
+        <div class="cal-hd">月</div><div class="cal-hd">火</div>
+        <div class="cal-hd">水</div><div class="cal-hd">木</div>
+        <div class="cal-hd">金</div>
+        <div class="cal-hd sat">土</div>
+      </div>
+      <div class="cal-days" id="reviewCalDays"></div>
+      <!-- 凡例 -->
+      <div id="reviewLegend" style="margin-top:12px;display:flex;flex-wrap:wrap;gap:6px"></div>
+      <p style="font-size:13px;font-weight:700;text-align:center;margin:24px 0 12px;color:var(--text-muted)">次はどうしますか？</p>
+      <button class="btn-next" style="margin-bottom:10px" onclick="continueInput()">続けて入力する</button>
+      <button class="btn-next" style="background:var(--surface);color:var(--text);border:1.5px solid var(--border-strong)" onclick="finishAll()">申請を終了する</button>
+    </div>
+
+    <!-- Step 6: 終了 -->
+    <div class="step" id="step6">
+      <div class="success-wrap" style="padding:40px 0">
+        <div class="success-circle">🎉</div>
+        <p class="success-title">お疲れさまでした！</p>
+        <p class="success-sub">すべての申請が完了しました。<br>管理者が確認後、<br>シフトに反映されます。</p>
+      </div>
     </div>
 
   </div>
@@ -667,9 +764,19 @@ body {
     <button class="btn-next" id="btnNext" onclick="goNext()" disabled>名前を選んでください</button>
   </div>
 
+  </div><!-- /mainApp -->
 </div>
 
 <script>
+// ── 締め切りチェック（毎月16日以降はフォームを閉じる）──
+(function() {
+  const today = new Date();
+  if (today.getDate() >= 16) {
+    document.getElementById('closedScreen').style.display = 'block';
+    document.getElementById('mainApp').style.display = 'none';
+  }
+})();
+
 const EMPLOYEES = ['小山','中神','野呂','藤原'];
 const WEEKDAYS = ['日','月','火','水','木','金','土'];
 
@@ -680,6 +787,12 @@ let selType = '';
 let selTypeLabel = '';
 let calYear = 2026;
 let calMonth = 6;
+let reviewYear = 2026;
+let reviewMonth = 6;
+
+// 申請済みデータを蓄積
+// { key: "2026-06-15", label: "休み希望（終日）", sym: "休" }
+let submittedEntries = [];
 
 // Build employee grid
 const empGrid = document.getElementById('empGrid');
@@ -708,14 +821,15 @@ function updateProgress() {
 function updateNextBtn() {
   const btn = document.getElementById('btnNext');
   const back = document.getElementById('btnBack');
-  back.style.display = currentStep > 0 && currentStep < 4 ? 'block' : 'none';
+  const bottomActions = document.getElementById('bottomActions');
 
-  if (currentStep === 4) {
-    btn.textContent = '続けて申請する';
-    btn.disabled = false;
-    back.style.display = 'none';
+  // step4以降は独自ボタンを使うので底部バーを隠す
+  if (currentStep >= 4) {
+    bottomActions.style.display = 'none';
     return;
   }
+  bottomActions.style.display = 'flex';
+  back.style.display = currentStep > 0 ? 'block' : 'none';
 
   const labels = ['名前を選んでください', '日付を選んでください', '種類を選んでください', '申請する →'];
   btn.textContent = labels[currentStep];
@@ -728,13 +842,12 @@ function updateNextBtn() {
 
 function goNext() {
   if (currentStep === 3) { submit(); return; }
-  if (currentStep === 4) { selDates=[];selType='';currentStep=1;showStep(); return; }
   currentStep++;
   showStep();
 }
 
 function goBack() {
-  if (currentStep > 1) { currentStep--; showStep(); }
+  if (currentStep > 0 && currentStep < 4) { currentStep--; showStep(); }
 }
 
 function showStep() {
@@ -743,10 +856,23 @@ function showStep() {
   updateNextBtn();
   if (currentStep === 1) renderCal();
   if (currentStep === 3) fillConfirm();
+  if (currentStep === 5) renderReviewCal();
   window.scrollTo(0, 0);
 }
 
 /* Calendar */
+// 申請種別 → 短い表示記号
+function typeToSym(type) {
+  if (!type) return '';
+  if (type.includes('○')) return '○';
+  if (type.includes('●')) return '●';
+  if (type.includes('☆')) return '☆';
+  if (type.includes('★')) return '★';
+  if (type.includes('できれば')) return '△';
+  if (type.includes('休')) return '休';
+  return '済';
+}
+
 function renderCal() {
   document.getElementById('calMonthLabel').textContent = `${calYear}年${calMonth}月`;
   const firstDay = new Date(calYear, calMonth - 1, 1).getDay();
@@ -759,14 +885,18 @@ function renderCal() {
     const dow = date.getDay();
     const key = `${calYear}-${String(calMonth).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const isPast = date < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const isAfterDeadline = d >= 16; // 16日以降は選択不可
     const isSel = selDates.includes(key);
+    const submitted = submittedEntries.find(e => e.key === key);
     let cls = 'cal-d';
     if (dow === 0) cls += ' sun';
     if (dow === 6) cls += ' sat';
-    if (isPast) cls += ' past';
+    if (isPast || isAfterDeadline) cls += ' past';
     if (isSel) cls += ' selected';
-    const onclick = isPast ? '' : `onclick="toggleDate('${key}')"`;
-    html += `<div class="${cls}" ${onclick}>${d}</div>`;
+    if (submitted && !isSel) cls += ' submitted';
+    const onclick = (isPast || isAfterDeadline || submitted) ? '' : `onclick="toggleDate('${key}')"`;
+    const sym = submitted ? `<span style="font-size:9px;display:block;line-height:1">${submitted.sym}</span>` : '';
+    html += `<div class="${cls}" ${onclick} title="${submitted ? submitted.label : (isAfterDeadline ? '締め切り後' : '')}">${d}${sym}</div>`;
   }
   document.getElementById('calDays').innerHTML = html;
   renderChips();
@@ -881,7 +1011,11 @@ function fillConfirm() {
   document.getElementById('cfType').textContent = selTypeLabel;
 }
 
+// ▼ Google Apps Script の URL をここに貼り付けてください
+const GAS_URL = "ここにApps ScriptのデプロイURLを貼り付け";
+
 function submit() {
+  // 完了画面の表示
   document.getElementById('cfName2').textContent = selEmpName;
   document.getElementById('cfDates2').textContent = selDates.map(k => {
     const [y, m, d] = k.split('-');
@@ -889,16 +1023,141 @@ function submit() {
     return `${+m}/${+d}(${WEEKDAYS[dow]})`;
   }).join('  ');
   document.getElementById('cfType2').textContent = selTypeLabel;
+
+  // 申請済みとして記録（カレンダーにグレー表示用）
+  const sym = typeToSym(selTypeLabel);
+  selDates.forEach(key => {
+    if (!submittedEntries.find(e => e.key === key)) {
+      submittedEntries.push({ key, label: selTypeLabel, sym });
+    }
+  });
+
   currentStep = 4;
+  showStep();
+
+  // Google Sheets へ送信
+  const offStart1 = document.getElementById('offStart1').value;
+  const offEnd1   = document.getElementById('offEnd1').value;
+  const offStart2 = document.getElementById('offStart2').value;
+  const offEnd2   = document.getElementById('offEnd2').value;
+  let timeRange = "—";
+  const s1 = document.getElementById('offCard1').classList.contains('selected');
+  const s2 = document.getElementById('offCard2').classList.contains('selected');
+  if (s1 || s2) {
+    const t1 = (offStart1 === '終日' || offEnd1 === '終日') ? '終日' : `${offStart1}〜${offEnd1}`;
+    const t2 = (offStart2 === '終日' || offEnd2 === '終日') ? '終日' : `${offStart2}〜${offEnd2}`;
+    if (s1 && s2) timeRange = `${t1} ／ ${t2}（できれば）`;
+    else if (s1)  timeRange = t1;
+    else           timeRange = `${t2}（できれば）`;
+  }
+  const payload = {
+    name:      selEmpName,
+    dates:     selDates.map(k => {
+      const [y, m, d] = k.split('-');
+      const dow = new Date(+y, +m - 1, +d).getDay();
+      return `${+m}/${+d}(${WEEKDAYS[dow]})`;
+    }).join('  '),
+    type:      selTypeLabel,
+    timeRange: timeRange,
+    note:      document.getElementById('noteField').value || '',
+  };
+  fetch(GAS_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  }).catch(() => {});
+}
+
+// 続けて入力する → 日付・種別だけリセット、名前は引き継ぐ
+function continueInput() {
+  selDates = [];
+  selType = '';
+  selTypeLabel = '';
+  document.querySelectorAll('.shift-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('offCard1').classList.remove('selected');
+  document.getElementById('offCard2').classList.remove('selected');
+  document.getElementById('noteField').value = '';
+  document.getElementById('offStart1').value = '終日';
+  document.getElementById('offEnd1').value = '終日';
+  document.getElementById('offStart2').value = '終日';
+  document.getElementById('offEnd2').value = '終日';
+  updateOffLabel(1); updateOffLabel(2);
+  currentStep = 1; // 日付選択へ（名前はそのまま）
   showStep();
 }
 
-function resetForm() {
+// 申請を確認する → 確認カレンダーへ
+function showReview() {
+  currentStep = 5;
+  showStep();
+}
+
+// 確認カレンダー描画
+function renderReviewCal() {
+  document.getElementById('reviewMonthLabel').textContent = `${reviewYear}年${reviewMonth}月`;
+  const firstDay = new Date(reviewYear, reviewMonth - 1, 1).getDay();
+  const daysInMonth = new Date(reviewYear, reviewMonth, 0).getDate();
+  const COLORS = {
+    '○': '#EBF3FF', '●': '#FFF4E6', '☆': '#EDFAF3',
+    '★': '#FFF0EE', '休': '#F5EEFF', '△': '#FFF8E6', '済': '#F0F0F0'
+  };
+  const FCOLORS = {
+    '○': '#1A5FA8', '●': '#8B4F00', '☆': '#0D6B45',
+    '★': '#8B2500', '休': '#4A1D8B', '△': '#7A4F00', '済': '#555'
+  };
+  let html = '';
+  for (let i = 0; i < firstDay; i++) html += '<div class="cal-d empty"></div>';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dow = new Date(reviewYear, reviewMonth - 1, d).getDay();
+    const key = `${reviewYear}-${String(reviewMonth).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const entry = submittedEntries.find(e => e.key === key);
+    let cls = 'cal-d';
+    if (dow === 0) cls += ' sun';
+    if (dow === 6) cls += ' sat';
+    let style = '';
+    let inner = `${d}`;
+    if (entry) {
+      const bg = COLORS[entry.sym] || '#F0F0F0';
+      const fc = FCOLORS[entry.sym] || '#555';
+      style = `background:${bg};border-radius:6px;`;
+      inner = `<span style="font-size:12px;font-weight:700;color:${fc};display:block;line-height:1.2">${d}</span><span style="font-size:9px;color:${fc};display:block;line-height:1">${entry.sym}</span>`;
+    }
+    html += `<div class="${cls}" style="${style}" title="${entry ? entry.label : ''}">${inner}</div>`;
+  }
+  document.getElementById('reviewCalDays').innerHTML = html;
+
+  // 凡例
+  const used = [...new Set(submittedEntries.filter(e => {
+    const [y,m] = e.key.split('-');
+    return +y===reviewYear && +m===reviewMonth;
+  }).map(e => e.sym))];
+  const NAMES = {'○':'早番','●':'遅番','☆':'午前','★':'午後','休':'休み希望','△':'できれば休み'};
+  const FCOLORS2 = {'○':'#1A5FA8','●':'#8B4F00','☆':'#0D6B45','★':'#8B2500','休':'#4A1D8B','△':'#7A4F00'};
+  const BGCOLORS = {'○':'#EBF3FF','●':'#FFF4E6','☆':'#EDFAF3','★':'#FFF0EE','休':'#F5EEFF','△':'#FFF8E6'};
+  document.getElementById('reviewLegend').innerHTML = used.map(sym =>
+    `<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;background:${BGCOLORS[sym]||'#eee'};color:${FCOLORS2[sym]||'#555'};font-size:12px;font-weight:500">${sym} ${NAMES[sym]||''}</span>`
+  ).join('');
+}
+
+function prevReviewMonth() {
+  if (reviewMonth > 1) reviewMonth--; else { reviewYear--; reviewMonth = 12; }
+  renderReviewCal();
+}
+function nextReviewMonth() {
+  if (reviewMonth < 12) reviewMonth++; else { reviewYear++; reviewMonth = 1; }
+  renderReviewCal();
+}
+
+// 申請を終了する
+function finishAll() {
+  submittedEntries = [];
   selEmpName = '';
   selDates = [];
   selType = '';
   selTypeLabel = '';
   calYear = 2026; calMonth = 6;
+  reviewYear = 2026; reviewMonth = 6;
   document.querySelectorAll('.emp-btn').forEach(b => b.classList.remove('selected'));
   document.querySelectorAll('.shift-card').forEach(c => c.classList.remove('selected'));
   document.getElementById('offCard1').classList.remove('selected');
@@ -909,31 +1168,12 @@ function resetForm() {
   document.getElementById('offStart2').value = '終日';
   document.getElementById('offEnd2').value = '終日';
   updateOffLabel(1); updateOffLabel(2);
-  currentStep = 0;
+  currentStep = 6;
   showStep();
 }
 
 updateProgress();
 updateNextBtn();
 </script>
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        var today = new Date();
-        var date = today.getDate(); 
-        if (date >= 16) {
-            document.body.innerHTML = `
-                <div style="text-align: center; padding: 50px 20px; font-family: sans-serif;">
-                    <div style="font-size: 50px; margin-bottom: 20px;">⚠️</div>
-                    <h2 style="color: #d9534f; margin-bottom: 10px;">来月分の申請は締め切りました</h2>
-                    <p style="color: #666; font-size: 14px;">シフトの希望申請は毎月15日までです。<br>以降の変更などは、岩上に直接連絡してください。</p>
-                </div>
-            `;
-            document.body.style.backgroundColor = "#f8f9fa";
-        }
-    });
-  js
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbx0h6-llWQ8gVi6SYulbzBKzvZud0B5ihHlpdMSYbLRWXZz4ofcZW7rCIFJLKmj1ctw/exec"
-</script>
-
 </body>
 </html>
