@@ -542,7 +542,7 @@ body {
       <p class="step-desc">複数日まとめて選べます。月をまたいでもOK。</p>
       <div class="deadline-banner">
         <span class="deadline-icon">⚠️</span>
-        <span class="deadline-text">申請できるのは<strong>1日〜15日</strong>までです。<br>16日以降の変更・追加は岩上に直接お願い致します。</span>
+        <span class="deadline-text">申請期間は毎月<strong>1日〜15日</strong>です。<br>16日以降の変更・追加は岩上に直接お願い致します。</span>
       </div>
       <div class="cal-nav">
         <button class="cal-nav-btn" onclick="prevCalMonth()">‹</button>
@@ -771,7 +771,8 @@ body {
 // ── 締め切りチェック（毎月16日以降はフォームを閉じる）──
 (function() {
   const today = new Date();
-  if (today.getDate() >= 16) {
+  const day = today.getDate();
+  if (day >= 16) {
     document.getElementById('closedScreen').style.display = 'block';
     document.getElementById('mainApp').style.display = 'none';
   }
@@ -885,18 +886,17 @@ function renderCal() {
     const dow = date.getDay();
     const key = `${calYear}-${String(calMonth).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const isPast = date < new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    const isAfterDeadline = d >= 16; // 16日以降は選択不可
     const isSel = selDates.includes(key);
     const submitted = submittedEntries.find(e => e.key === key);
     let cls = 'cal-d';
     if (dow === 0) cls += ' sun';
     if (dow === 6) cls += ' sat';
-    if (isPast || isAfterDeadline) cls += ' past';
+    if (isPast) cls += ' past';
     if (isSel) cls += ' selected';
     if (submitted && !isSel) cls += ' submitted';
-    const onclick = (isPast || isAfterDeadline || submitted) ? '' : `onclick="toggleDate('${key}')"`;
+    const onclick = (isPast || submitted) ? '' : `onclick="toggleDate('${key}')"`;
     const sym = submitted ? `<span style="font-size:9px;display:block;line-height:1">${submitted.sym}</span>` : '';
-    html += `<div class="${cls}" ${onclick} title="${submitted ? submitted.label : (isAfterDeadline ? '締め切り後' : '')}">${d}${sym}</div>`;
+    html += `<div class="${cls}" ${onclick} title="${submitted ? submitted.label : ''}">${d}${sym}</div>`;
   }
   document.getElementById('calDays').innerHTML = html;
   renderChips();
