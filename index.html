@@ -539,15 +539,15 @@ body {
     <div class="step" id="step1">
       <p class="step-label">step 2 / 4</p>
       <h1 class="step-title">希望日を<br>選んでください</h1>
-      <p class="step-desc">複数日まとめて選べます。月をまたいでもOK。</p>
+      <p class="step-desc">希望日をタップして選択してください</p>
       <div class="deadline-banner">
         <span class="deadline-icon">⚠️</span>
         <span class="deadline-text">申請期間は毎月<strong>1日〜15日</strong>です。<br>16日以降の変更・追加は岩上に直接お願い致します。</span>
       </div>
       <div class="cal-nav">
-        <button class="cal-nav-btn" onclick="prevCalMonth()">‹</button>
+        <button class="cal-nav-btn" onclick="prevCalMonth()" style="opacity:0.2;cursor:default">‹</button>
         <span class="cal-month-label" id="calMonthLabel"></span>
-        <button class="cal-nav-btn" onclick="nextCalMonth()">›</button>
+        <button class="cal-nav-btn" onclick="nextCalMonth()" style="opacity:0.2;cursor:default">›</button>
       </div>
       <div class="cal-head">
         <div class="cal-hd sun">日</div>
@@ -786,8 +786,12 @@ let selEmpName = '';
 let selDates = [];
 let selType = '';
 let selTypeLabel = '';
-let calYear = 2026;
-let calMonth = 6;
+// カレンダーは翌月のみ表示
+const _today = new Date();
+let calYear  = _today.getMonth() === 11 ? _today.getFullYear() + 1 : _today.getFullYear();
+let calMonth = _today.getMonth() === 11 ? 1 : _today.getMonth() + 2; // 翌月
+const NEXT_YEAR  = calYear;
+const NEXT_MONTH = calMonth;
 let reviewYear = 2026;
 let reviewMonth = 6;
 
@@ -934,12 +938,10 @@ function removeDate(key) {
 }
 
 function prevCalMonth() {
-  if (calMonth > 1) calMonth--; else { calYear--; calMonth = 12; }
-  renderCal();
+  // 翌月固定のため移動不可
 }
 function nextCalMonth() {
-  if (calMonth < 12) calMonth++; else { calYear++; calMonth = 1; }
-  renderCal();
+  // 翌月固定のため移動不可
 }
 
 /* Off cards — each toggles independently */
@@ -1012,7 +1014,7 @@ function fillConfirm() {
 }
 
 // ▼ Google Apps Script の URL をここに貼り付けてください
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwim3SXiC5zPH-u1HhZjoAzdbQihuHRaHd-c7ZYGTswuBofJIshJD8vK7iXLRhxTaOQ/exec";
+const GAS_URL = "ここにApps ScriptのデプロイURLを貼り付け";
 
 function submit() {
   // 完了画面の表示
@@ -1156,8 +1158,7 @@ function finishAll() {
   selDates = [];
   selType = '';
   selTypeLabel = '';
-  calYear = 2026; calMonth = 6;
-  reviewYear = 2026; reviewMonth = 6;
+  calYear = NEXT_YEAR; calMonth = NEXT_MONTH;
   document.querySelectorAll('.emp-btn').forEach(b => b.classList.remove('selected'));
   document.querySelectorAll('.shift-card').forEach(c => c.classList.remove('selected'));
   document.getElementById('offCard1').classList.remove('selected');
