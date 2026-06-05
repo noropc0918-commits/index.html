@@ -1063,7 +1063,7 @@ function submit() {
     timeRange: timeRange,
     note:      document.getElementById('noteField').value || '',
   };
-  fetch(GAS_URL, {
+  fetch('https://script.google.com/macros/s/AKfycbx8dJnLD0OQZwOPs3dPRTCqX2eYp3DJUo8rfKn_0iQKqlANmx6jQct41uot3wccF7TR/exec', {
     method: 'POST',
     mode: 'no-cors',
     headers: { 'Content-Type': 'application/json' },
