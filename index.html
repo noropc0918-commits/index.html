@@ -696,22 +696,23 @@ function submit(){
 
   currentStep=4; showStep();
 
-  // GAS送信
+  // GAS送信 — datesはISO形式カンマ区切り(例: 2026-07-06,2026-07-07)
+  const datesISO = selDates.join(',');
   const s1=document.getElementById('offCard1').classList.contains('selected');
   const s2=document.getElementById('offCard2').classList.contains('selected');
   const os1=document.getElementById('offStart1').value, oe1=document.getElementById('offEnd1').value;
   const os2=document.getElementById('offStart2').value, oe2=document.getElementById('offEnd2').value;
-  let timeRange='—';
+  let timeRange='---';
   if(s1||s2){
-    const t1=(os1==='終日'||oe1==='終日')?'終日':os1+'〜'+oe1;
-    const t2=(os2==='終日'||oe2==='終日')?'終日':os2+'〜'+oe2;
-    if(s1&&s2) timeRange=t1+' ／ '+t2+'(できれば)';
+    const t1=(os1==='終日'||oe1==='終日')?'終日':os1+'-'+oe1;
+    const t2=(os2==='終日'||oe2==='終日')?'終日':os2+'-'+oe2;
+    if(s1&&s2) timeRange=t1+' / '+t2+'(できれば)';
     else if(s1) timeRange=t1;
     else timeRange=t2+'(できれば)';
   }
   fetch('https://script.google.com/macros/s/AKfycbx8dJnLD0OQZwOPs3dPRTCqX2eYp3DJUo8rfKn_0iQKqlANmx6jQct41uot3wccF7TR/exec',{
     method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({ name:selEmpName, dates:fmt, type:selTypeLabel, timeRange:timeRange, note:document.getElementById('noteField').value||'' }),
+    body:JSON.stringify({ name:selEmpName, dates:datesISO, type:selTypeLabel, timeRange:timeRange, note:document.getElementById('noteField').value||'' }),
   }).catch(function(){});
 }
 
